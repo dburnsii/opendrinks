@@ -1,30 +1,54 @@
 # OpenDrinks
 
-The computer-friendly database for all your favorite drinks! This project serves
-to make it easy to allow computers to pour our cocktails for us, specifically
-by only including the data they need in order to do so. This data is not so
-great for a recipe book, but a Raspberry Pi will love it!
-
-This repository serves as the primary data source for the Bartender project!
+OpenDrinks is a repository for fancy (or not so fancy) cocktail recipe, formatted for computers to use. These recipes contain metadata that is less valuable to a human, but can be useful for a machine attempting to pour a beverage. For instance: pouring Cranberry Juice is easy, but pouring Cola is made more complicated due to carbonation. Here we make note of that so our robots know how to handle it.
 
 ## Getting Started
+To add a recipe to the repo, run the `drink_maker.py` utility, and it'll walk you through the process. Currently, for any ingredient that shouldn't be put through a pump (lemon wedges, salt, bitters, thick syrups), be sure to use either `dash` or `count` as the measure, since the robots may try to pour anything labeled `mL`.
+## Formatting
 
-On it's own, this repository doesn't do much. In order to make use of the
-recipes listed here, check out the Bartender project.
+### Images
+ - Must be 200x200 px and in `.jpg` format
+ - Must be named the same name as an existing drink (i.e. `rum_and_coke.jpg` for `Rum and Coke`)
+ - Must be licensed under the `Creative Commons` License. https://search.creativecommons.org/ is a great resource for finding images, and credits must be added to the `images/credits.txt` file.
 
-In order to add new drinks to the database, you'll need `python3` and a copy
-of your drink recipe with the units in milliliters.
+### JSON
+The `drink_maker.py` utility should handle all formatting, but as a reference, the format of all JSON files is as described below:
+#### Ingredients
+Ingredients are individual components of a drink, such as Rum or Limes
+```
+  {
+    name: Name of the ingredient
+      (type: string, required: true),
+    measure: One of ["mL", "dash", "count"],
+      used to determine how to measure this ingredient
+      (type: string, required: true),
+    carbonated: Whether or not this ingredient is even slightly carbonated
+      (type: boolean, required: true)
+  }
+```
 
-## Development
-
-In order to add a new drink to this repo, run `python3 drink_maker.py` from
-your command line. This should walk you through all the steps to create a
-recipe for your new drink, as well as records for each ingredient we don't
-already know about.
-
-Don't forget to add an image for your drink!
-
-## Contributing
-
-Simply fork this repo and submit a pull request to have your recipe(s) added
-to the repo.
+#### Drinks
+Drinks are recipes for cocktails that incorporate multiple ingredients. The ingredients must be present for the drink to be valid, and the `drink_maker.py` utility will establish a new ingredient for you if one does not exist. Unless a drink has a hard requirement for a type of ingredient (i.e. Jager for a Jagerbomb), err on the side of being as agnostic as possible (`Vodka` vs `Smirinoff`).
+```
+  {
+    name: Name of the drink
+      (type: string, required: true),
+    ingredients: List of ingredients, quantities, and whether each is required
+      (type: array(object), required: true):
+      [
+        {
+          ingredient: Name of the ingredient
+            (type: string, required: true),
+          quantity: Measure of how much of this ingredient we need
+            (type: float, required: true),
+          required: Whether or not this drink can be made without this ingredient
+            (type: boolean, required: false, default: true)
+        }
+      ],
+    alias: List of alternative names a drink could be called (i.e. `Adios` vs `AMF`).
+      Used for searching for the drink.  
+      (type: array(string), required: false, default: []),
+    image: String to locate the image associated with this drink.
+      (type: string, required: true)
+  }
+```
